@@ -21,6 +21,7 @@ import skimage.transform
 import cv2
 import urllib.request
 import shutil
+import zipfile
 import warnings
 from distutils.version import LooseVersion
 from tqdm.notebook import tqdm
@@ -45,6 +46,9 @@ import tempfile
 
 # URL from which to download the latest COCO trained weights
 COCO_MODEL_URL = "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"
+
+#URL from which to download zip of SAGE pretrained models
+PRETRAIN_URL = "https://github.com/timday23/SAGE_TPD/releases/download/v1.0.0/pretrained_models.zip"
 
 
 ############################################################
@@ -890,6 +894,33 @@ def download_trained_weights(coco_model_path, verbose=1):
     if verbose > 0:
         print("... done downloading pretrained model!")
 
+
+def download_pretrained_models(pretrained_dir_path, verbose=1):
+    """Download SAGE trained weights from Releases.
+
+    pretrained_dir_path: local path of SAGE pretrained weights
+    """
+    os.makedirs(pretrained_dir_path, exist_ok=True)
+
+    zip_path = os.path.join(pretrained_dir_path, "pretrained_models.zip")
+    
+    if verbose > 0:
+        print("Downloading pretrained models to " + pretrained_dir_path + " ...")
+
+    with urllib.request.urlopen(PRETRAIN_URL) as resp, open(zip_path, 'wb') as out:
+        shutil.copyfileobj(resp, out)
+
+    if verbose > 0:
+        print("Download complete! Extracting...")
+
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(pretrained_dir_path)
+
+    #remove zip file after extraction
+    os.remove(zip_path)
+    
+    if verbose > 0:
+        print("... done downloading pretrained models!")
 
 def norm_boxes(boxes, shape):
     """Converts boxes from pixel coordinates to normalized coordinates.
